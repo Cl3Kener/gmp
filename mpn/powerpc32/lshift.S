@@ -1,30 +1,30 @@
-# PowerPC-32 __mpn_lshift -- Shift a number left.
+/* PowerPC-32 __mpn_lshift -- Shift a number left.
 
-# Copyright (C) 1995, 1998 Free Software Foundation, Inc.
+Copyright (C) 1995, 1998 Free Software Foundation, Inc.
 
-# This file is part of the GNU MP Library.
+This file is part of the GNU MP Library.
 
-# The GNU MP Library is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Library General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or (at your
-# option) any later version.
+The GNU MP Library is free software; you can redistribute it and/or modify
+it under the terms of the GNU Library General Public License as published by
+the Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
 
-# The GNU MP Library is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
-# License for more details.
+The GNU MP Library is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+License for more details.
 
-# You should have received a copy of the GNU Library General Public License
-# along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
-# the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
-# MA 02111-1307, USA.
+You should have received a copy of the GNU Library General Public License
+along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
+the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+MA 02111-1307, USA. */
 
 
-# INPUT PARAMETERS
-# res_ptr	r3
-# s1_ptr	r4
-# size		r5
-# cnt		r6
+/* INPUT PARAMETERS
+   res_ptr	r3
+   s1_ptr	r4
+   size		r5
+   cnt		r6 */
 
 #include "asm-syntax.h"
 
@@ -42,118 +42,118 @@ __mpn_lshift:
 #else
 	.text
 	.align 4
-	.globl __mpn_lshift
-__mpn_lshift:
+	.globl C_SYMBOL_NAME(__mpn_lshift)
+C_SYMBOL_NAME(__mpn_lshift):
 #endif
-	cmpi	0,5,12		# more than 12 limbs?
-	slwi	0,5,2
-	add	4,4,0		# make r4 point at end of s1
-	add	7,3,0		# make r7 point at end of res
-	bgt	.LBIG		# branch if more than 12 limbs
+	cmpi	cr0,r5,12	/* more than 12 limbs? */
+	slwi	r0,r5,2
+	add	r4,r4,r0	/* make r4 point at end of s1 */
+	add	r7,r3,r0	/* make r7 point at end of res */
+	bgt	.LBIG		/* branch if more than 12 limbs */
 
-	mtctr	5		# copy size into CTR
-	subfic	8,6,32
-	lwzu	11,-4(4)	# load first s1 limb
-	srw	3,11,8		# compute function return value
+	mtctr	r5		/* copy size into CTR */
+	subfic	r8,r6,32
+	lwzu	r11,-4(r4)	/* load first s1 limb */
+	srw	r3,r11,r8	/* compute function return value */
 	bdz	.Lend1
 
-.Loop:	lwzu	10,-4(4)
-	slw	9,11,6
-	srw	12,10,8
-	or	9,9,12
-	stwu	9,-4(7)
+.Loop:	lwzu	r10,-4(r4)
+	slw	r9,r11,r6
+	srw	r12,r10,r8
+	or	r9,r9,r12
+	stwu	r9,-4(r7)
 	bdz	.Lend2
-	lwzu	11,-4(4)
-	slw	9,10,6
-	srw	12,11,8
-	or	9,9,12
-	stwu	9,-4(7)
+	lwzu	r11,-4(r4)
+	slw	r9,r10,r6
+	srw	r12,r11,r8
+	or	r9,r9,r12
+	stwu	r9,-4(r7)
 	bdnz	.Loop
 
-.Lend1:	slw	0,11,6
-	stw	0,-4(7)
+.Lend1:	slw	r0,r11,r6
+	stw	r0,-4(r7)
 	blr
-.Lend2:	slw	0,10,6
-	stw	0,-4(7)
+.Lend2:	slw	r0,r10,r6
+	stw	r0,-4(r7)
 	blr
 
 .LBIG:
-	stmw	24,-32(1)	# save registers we are supposed to preserve
-	lwzu	9,-4(4)
-	subfic	8,6,32
-	srw	3,9,8		# compute function return value
-	slw	0,9,6
-	addi	5,5,-1
+	stmw	r24,-32(r1)	/* save registers we are supposed to preserve */
+	lwzu	r9,-4(r4)
+	subfic	r8,r6,32
+	srw	r3,r9,r8	/* compute function return value */
+	slw	r0,r9,r6
+	addi	r5,r5,-1
 
-	andi.	10,5,3		# count for spill loop
+	andi.	r10,r5,3	/* count for spill loop */
 	beq	.Le
-	mtctr	10
-	lwzu	28,-4(4)
+	mtctr	r10
+	lwzu	r28,-4(r4)
 	bdz	.Lxe0
 
-.Loop0:	slw	12,28,6
-	srw	24,28,8
-	lwzu	28,-4(4)
-	or	24,0,24
-	stwu	24,-4(7)
-	mr	0,12
-	bdnz	.Loop0		# taken at most once!
+.Loop0:	slw	r12,r28,r6
+	srw	r24,r28,r8
+	lwzu	r28,-4(r4)
+	or	r24,r0,r24
+	stwu	r24,-4(r7)
+	mr	r0,r12
+	bdnz	.Loop0		/* taken at most once! */
 
-.Lxe0:	slw	12,28,6
-	srw	24,28,8
-	or	24,0,24
-	stwu	24,-4(7)
-	mr	0,12
+.Lxe0:	slw	r12,r28,r6
+	srw	r24,r28,r8
+	or	r24,r0,r24
+	stwu	r24,-4(r7)
+	mr	r0,r12
 
-.Le:	srwi	5,5,2		# count for unrolled loop
-	addi	5,5,-1
-	mtctr	5
-	lwz	28,-4(4)
-	lwz	29,-8(4)
-	lwz	30,-12(4)
-	lwzu	31,-16(4)
+.Le:	srwi	r5,r5,2		/* count for unrolled loop */
+	addi	r5,r5,-1
+	mtctr	r5
+	lwz	r28,-4(r4)
+	lwz	r29,-8(r4)
+	lwz	r30,-12(r4)
+	lwzu	r31,-16(r4)
 
-.LoopU:	slw	9,28,6
-	srw	24,28,8
-	lwz	28,-4(4)
-	slw	10,29,6
-	srw	25,29,8
-	lwz	29,-8(4)
-	slw	11,30,6
-	srw	26,30,8
-	lwz	30,-12(4)
-	slw	12,31,6
-	srw	27,31,8
-	lwzu	31,-16(4)
-	or	24,0,24
-	stw	24,-4(7)
-	or	25,9,25
-	stw	25,-8(7)
-	or	26,10,26
-	stw	26,-12(7)
-	or	27,11,27
-	stwu	27,-16(7)
-	mr	0,12
+.LoopU:	slw	r9,r28,r6
+	srw	r24,r28,r8
+	lwz	r28,-4(r4)
+	slw	r10,r29,r6
+	srw	r25,r29,r8
+	lwz	r29,-8(r4)
+	slw	r11,r30,r6
+	srw	r26,r30,r8
+	lwz	r30,-12(r4)
+	slw	r12,r31,r6
+	srw	r27,r31,r8
+	lwzu	r31,-16(r4)
+	or	r24,r0,r24
+	stw	r24,-4(r7)
+	or	r25,r9,r25
+	stw	r25,-8(r7)
+	or	r26,r10,r26
+	stw	r26,-12(r7)
+	or	r27,r11,r27
+	stwu	r27,-16(r7)
+	mr	r0,r12
 	bdnz	.LoopU
 
-	slw	9,28,6
-	srw	24,28,8
-	slw	10,29,6
-	srw	25,29,8
-	slw	11,30,6
-	srw	26,30,8
-	slw	12,31,6
-	srw	27,31,8
-	or	24,0,24
-	stw	24,-4(7)
-	or	25,9,25
-	stw	25,-8(7)
-	or	26,10,26
-	stw	26,-12(7)
-	or	27,11,27
-	stwu	27,-16(7)
-	mr	0,12
+	slw	r9,r28,r6
+	srw	r24,r28,r8
+	slw	r10,r29,r6
+	srw	r25,r29,r8
+	slw	r11,r30,r6
+	srw	r26,r30,r8
+	slw	r12,r31,r6
+	srw	r27,r31,r8
+	or	r24,r0,r24
+	stw	r24,-4(r7)
+	or	r25,r9,r25
+	stw	r25,-8(r7)
+	or	r26,r10,r26
+	stw	r26,-12(r7)
+	or	r27,r11,r27
+	stwu	r27,-16(r7)
+	mr	r0,r12
 
-	stw	0,-4(7)
-	lmw	24,-32(1)	# restore registers
+	stw	r0,-4(r7)
+	lmw	r24,-32(r1)	/* restore registers */
 	blr
