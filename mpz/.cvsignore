@@ -1,0 +1,5 @@
+*.lo
+.libs
+Makefile
+fac_ui.h
+libmpz.la
