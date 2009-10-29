@@ -1,5 +1,23 @@
 2009-10-29  Torbjorn Granlund  <tege@gmplib.org>
 
+	* mpn/generic/mulmod_bnm1.c (mpn_mulmod_bnm1): Call mpn_mul_fft.
+	(mpn_mulmod_bnm1_next_size): Adopt to SS FFT.
+
+	* mpn/generic/mul_fft.c (mpn_mul_fft): Make it return high limb.
+	(mpn_mul_fft_internal): Likewise.
+
+	* mpn/generic/mulmod_bnm1.c: New file, by Niels Möller.
+	* configure.in (gmp_mpn_functions):  Add mulmod_bnm1.
+	* gmp-impl.h: Add related declarations.
+	* tune/tuneup.c: Tune MULMOD_BNM1_THRESHOLD.
+	* tune/speed.h (SPEED_ROUTINE_MPN_MULMOD_BNM1): New macro.
+	* tune/common.c (speed_mpn_mulmod_bnm1): New function.
+	* Makefile.am (TUNE_MPN_SRCS_BASIC): Add mulmod_bnm1.c.
+
+	* gmp-impl.h (mpn_kara_mul_n, mpn_kara_sqr_n): Remove declarations.
+	* tune/common.c: Remove/rename kara functions.
+	* tune/speed.h: Likewise.
+
 	* tests/devel/try.c: Clean up usage of %p printf arguments.
 
 	* gmp-impl.h: Update MUL/SQR MINSIZE macros to reflect new function
@@ -20,12 +38,6 @@
 	* gmp-impl.h (mpn_toom3_mul_n, mpn_toom3_sqr_n): Remove
 	declarations.
 	(mpn_toom2_sqr_itch): Add margin for recursive calls.
-
-2009-10-29  Torbjorn Granlund  <tege@gmplib.org>
-
-	* gmp-impl.h (mpn_kara_mul_n, mpn_kara_sqr_n): Remove declarations.
-	* tune/common.c: Remove/rename kara functions.
-	* tune/speed.h: Likewise.
 
 2009-10-28  Niels Möller  <nisse@lysator.liu.se>
 
