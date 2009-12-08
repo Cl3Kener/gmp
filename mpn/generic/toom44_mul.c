@@ -148,14 +148,10 @@ mpn_toom44_mul (mp_ptr pp,
      gives roughly 32 n/3 + log term. */
 
   /* Compute apx = a0 + 2 a1 + 4 a2 + 8 a3 and amx = a0 - 2 a1 + 4 a2 - 8 a3.  */
-  if (mpn_toom_eval_dgr3_pm2 (apx, amx, ap, n, s, tp))
-    flags = toom7_w1_neg;
-  else
-    flags = 0;
+  flags = toom7_w1_neg & mpn_toom_eval_dgr3_pm2 (apx, amx, ap, n, s, tp);
 
   /* Compute bpx = b0 + 2 b1 + 4 b2 + 8 b3 and bmx = b0 - 2 b1 + 4 b2 - 8 b3.  */
-  if (mpn_toom_eval_dgr3_pm2 (bpx, bmx, bp, n, t, tp))
-    flags ^= toom7_w1_neg;
+  flags ^= toom7_w1_neg & mpn_toom_eval_dgr3_pm2 (bpx, bmx, bp, n, t, tp);
 
   TOOM44_MUL_N_REC (v2, apx, bpx, n + 1, tp);	/* v2,  2n+1 limbs */
   TOOM44_MUL_N_REC (vm2, amx, bmx, n + 1, tp);	/* vm2,  2n+1 limbs */
@@ -166,7 +162,8 @@ mpn_toom44_mul (mp_ptr pp,
   cy = 2*cy + mpn_addlsh1_n (apx, a2, apx, n);
   if (s < n)
     {
-      mp_limb_t cy2 = mpn_addlsh1_n (apx, a3, apx, s);
+      mp_limb_t cy2;
+      cy2 = mpn_addlsh1_n (apx, a3, apx, s);
       apx[n] = 2*cy + mpn_lshift (apx + s, apx + s, n - s, 1);
       MPN_INCR_U (apx + s, n+1-s, cy2);
     }
@@ -187,7 +184,8 @@ mpn_toom44_mul (mp_ptr pp,
   cy = 2*cy + mpn_addlsh1_n (bpx, b2, bpx, n);
   if (t < n)
     {
-      mp_limb_t cy2 = mpn_addlsh1_n (bpx, b3, bpx, t);
+      mp_limb_t cy2;
+      cy2 = mpn_addlsh1_n (bpx, b3, bpx, t);
       bpx[n] = 2*cy + mpn_lshift (bpx + t, bpx + t, n - t, 1);
       MPN_INCR_U (bpx + t, n+1-t, cy2);
     }
@@ -208,12 +206,10 @@ mpn_toom44_mul (mp_ptr pp,
   TOOM44_MUL_N_REC (vh, apx, bpx, n + 1, tp);	/* vh,  2n+1 limbs */
 
   /* Compute apx = a0 + a1 + a2 + a3 and amx = a0 - a1 + a2 - a3.  */
-  if (mpn_toom_eval_dgr3_pm1 (apx, amx, ap, n, s, tp))
-    flags |= toom7_w3_neg;
+  flags |= toom7_w3_neg & mpn_toom_eval_dgr3_pm1 (apx, amx, ap, n, s, tp);
 
   /* Compute bpx = b0 + b1 + b2 + b3 bnd bmx = b0 - b1 + b2 - b3.  */
-  if (mpn_toom_eval_dgr3_pm1 (bpx, bmx, bp, n, t, tp))
-    flags ^= toom7_w3_neg;
+  flags ^= toom7_w3_neg & mpn_toom_eval_dgr3_pm1 (bpx, bmx, bp, n, t, tp);
 
   TOOM44_MUL_N_REC (vm1, amx, bmx, n + 1, tp);	/* vm1,  2n+1 limbs */
   /* Clobbers amx, bmx. */

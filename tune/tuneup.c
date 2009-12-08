@@ -159,15 +159,16 @@ mp_size_t  sqr_toom3_threshold          = SQR_TOOM3_THRESHOLD_LIMIT;
 mp_size_t  sqr_toom4_threshold          = SQR_TOOM4_THRESHOLD_LIMIT;
 mp_size_t  sqr_fft_threshold            = MP_SIZE_T_MAX;
 mp_size_t  sqr_fft_modf_threshold       = MP_SIZE_T_MAX;
-mp_size_t  mullow_basecase_threshold    = MP_SIZE_T_MAX;
-mp_size_t  mullow_dc_threshold          = MP_SIZE_T_MAX;
-mp_size_t  mullow_mul_n_threshold       = MP_SIZE_T_MAX;
+mp_size_t  mullo_basecase_threshold     = MP_SIZE_T_MAX;
+mp_size_t  mullo_dc_threshold           = MP_SIZE_T_MAX;
+mp_size_t  mullo_mul_n_threshold        = MP_SIZE_T_MAX;
 mp_size_t  mulmod_bnm1_threshold        = MP_SIZE_T_MAX;
 mp_size_t  div_sb_preinv_threshold      = MP_SIZE_T_MAX;
 mp_size_t  dc_div_qr_threshold          = MP_SIZE_T_MAX;
 mp_size_t  dc_divappr_q_threshold       = MP_SIZE_T_MAX;
 mp_size_t  dc_bdiv_qr_threshold         = MP_SIZE_T_MAX;
 mp_size_t  dc_bdiv_q_threshold          = MP_SIZE_T_MAX;
+mp_size_t  inv_newton_threshold         = MP_SIZE_T_MAX;
 mp_size_t  binv_newton_threshold        = MP_SIZE_T_MAX;
 mp_size_t  redc_1_to_redc_2_threshold   = MP_SIZE_T_MAX;
 mp_size_t  redc_1_to_redc_n_threshold   = MP_SIZE_T_MAX;
@@ -854,47 +855,47 @@ tune_mul (void)
 
 
 void
-tune_mullow (void)
+tune_mullo (void)
 {
   static struct param_t  param;
 
-  param.function = speed_mpn_mullow_n;
+  param.function = speed_mpn_mullo_n;
 
-  param.name = "MULLOW_BASECASE_THRESHOLD";
+  param.name = "MULLO_BASECASE_THRESHOLD";
   param.min_size = 1;
   param.min_is_always = 1;
-  param.max_size = MULLOW_BASECASE_THRESHOLD_LIMIT-1;
+  param.max_size = MULLO_BASECASE_THRESHOLD_LIMIT-1;
   param.stop_factor = 1.5;
   param.noprint = 1;
-  one (&mullow_basecase_threshold, &param);
+  one (&mullo_basecase_threshold, &param);
 
-  param.name = "MULLOW_DC_THRESHOLD";
+  param.name = "MULLO_DC_THRESHOLD";
   param.min_size = 8;
   param.min_is_always = 0;
   param.max_size = 1000;
-  one (&mullow_dc_threshold, &param);
+  one (&mullo_dc_threshold, &param);
 
-  if (mullow_basecase_threshold >= mullow_dc_threshold)
+  if (mullo_basecase_threshold >= mullo_dc_threshold)
     {
-      print_define ("MULLOW_BASECASE_THRESHOLD", mullow_dc_threshold);
-      print_define_remark ("MULLOW_DC_THRESHOLD", 0, "never mpn_mullow_basecase");
+      print_define ("MULLO_BASECASE_THRESHOLD", mullo_dc_threshold);
+      print_define_remark ("MULLO_DC_THRESHOLD", 0, "never mpn_mullo_basecase");
     }
   else
     {
-      print_define ("MULLOW_BASECASE_THRESHOLD", mullow_basecase_threshold);
-      print_define ("MULLOW_DC_THRESHOLD", mullow_dc_threshold);
+      print_define ("MULLO_BASECASE_THRESHOLD", mullo_basecase_threshold);
+      print_define ("MULLO_DC_THRESHOLD", mullo_dc_threshold);
     }
 
 #if WANT_FFT
-  param.name = "MULLOW_MUL_N_THRESHOLD";
-  param.min_size = mullow_dc_threshold;
+  param.name = "MULLO_MUL_N_THRESHOLD";
+  param.min_size = mullo_dc_threshold;
   param.max_size = 2 * mul_fft_threshold;
   param.noprint = 0;
   param.step_factor = 0.02;
-  one (&mullow_mul_n_threshold, &param);
+  one (&mullo_mul_n_threshold, &param);
 #else
-  print_define_remark ("MULLOW_MUL_N_THRESHOLD", MP_SIZE_T_MAX,
-                           "without FFT use mullow forever");
+  print_define_remark ("MULLO_MUL_N_THRESHOLD", MP_SIZE_T_MAX,
+                           "without FFT use mullo forever");
 #endif
 }
 
@@ -906,7 +907,7 @@ tune_mulmod_bnm1 (void)
   param.function = speed_mpn_mulmod_bnm1;
 
   param.name = "MULMOD_BNM1_THRESHOLD";
-  param.min_size = 4;
+  param.min_size = 12;
   param.step_factor = 0.0;
   param.step = 4;
   param.min_is_always = 1;
@@ -1004,7 +1005,7 @@ tune_dc_div (void)
     param.name = "DC_DIV_QR_THRESHOLD";
     param.function = speed_mpn_sbpi1_div_qr;
     param.function2 = speed_mpn_dcpi1_div_qr;
-    param.min_size = 4;
+    param.min_size = 6;
     one (&dc_div_qr_threshold, &param);
   }
   {
@@ -1012,7 +1013,7 @@ tune_dc_div (void)
     param.name = "DC_DIVAPPR_Q_THRESHOLD";
     param.function = speed_mpn_sbpi1_divappr_q;
     param.function2 = speed_mpn_dcpi1_divappr_q;
-    param.min_size = 4;
+    param.min_size = 6;
     one (&dc_divappr_q_threshold, &param);
   }
 }
@@ -1035,6 +1036,19 @@ tune_dc_bdiv (void)
     param.function2 = speed_mpn_dcpi1_bdiv_q;
     param.min_size = 4;
     one (&dc_bdiv_q_threshold, &param);
+  }
+}
+
+void
+tune_invert (void)
+{
+  {
+    static struct param_t  param;
+    param.name = "INV_NEWTON_THRESHOLD";
+    param.function = speed_mpn_invert;
+    param.step_factor = 0.02;
+    param.max_size = 5000;
+    one (&inv_newton_threshold, &param);
   }
 }
 
@@ -1122,17 +1136,6 @@ tune_hgcd (void)
   one (&hgcd_threshold, &param);
 }
 
-#if 0
-void
-tune_gcd_accel (void)
-{
-  static struct param_t  param;
-  param.name = "GCD_ACCEL_THRESHOLD";
-  param.function = speed_mpn_gcd;
-  param.min_size = 1;
-  one (&gcd_accel_threshold, &param);
-}
-#endif
 void
 tune_gcd_dc (void)
 {
@@ -1286,9 +1289,9 @@ tune_mod_1 (void)
 
     s.r = GMP_NUMB_MASK / 5;
     param.function = speed_mpn_mod_1_tune;
-    param.min_size = 1;
 
     param.name = "MOD_1_1_THRESHOLD";
+    param.min_size = 2;
     one (&mod_1_1_threshold, &param);
 
     param.name = "MOD_1_2_THRESHOLD";
@@ -1901,7 +1904,7 @@ all (void)
   tune_fft_sqr ();
   printf ("\n");
 
-  tune_mullow ();
+  tune_mullo ();
   printf("\n");
 
   tune_mulmod_bnm1 ();
@@ -1909,6 +1912,9 @@ all (void)
 
   tune_dc_div ();
   tune_dc_bdiv ();
+#if 0
+  tune_invert ();
+#endif
   tune_binvert ();
   tune_redc ();
   printf("\n");
@@ -1917,9 +1923,6 @@ all (void)
   tune_hgcd ();
   tune_gcd_dc ();
   tune_gcdext_dc ();
-#if 0
-  tune_gcd_accel ();
-#endif
   tune_jacobi_base ();
   printf("\n");
 

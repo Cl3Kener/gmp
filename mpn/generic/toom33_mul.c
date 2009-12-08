@@ -96,7 +96,7 @@ mpn_toom33_mul (mp_ptr pp,
   ASSERT (0 < s && s <= n);
   ASSERT (0 < t && t <= n);
 
-  as1 = scratch + 4*n + 4;
+  as1  = scratch + 4 * n + 4;
   asm1 = scratch + 2 * n + 2;
   as2 = pp + n + 1;
 
@@ -291,5 +291,5 @@ mpn_toom33_mul (mp_ptr pp,
 
   TOOM33_MUL_N_REC (v0, ap, bp, n, scratch_out);	/* v0, 2n limbs */
 
-  mpn_toom_interpolate_5pts (pp, v2, vm1, n, s + t, 1^vm1_neg, vinf0);
+  mpn_toom_interpolate_5pts (pp, v2, vm1, n, s + t, vm1_neg, vinf0);
 }

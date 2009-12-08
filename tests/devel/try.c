@@ -592,7 +592,10 @@ validate_sqrtrem (void)
 #define TYPE_COM_N            28
 
 #define TYPE_ADDLSH1_N        30
+#define TYPE_ADDLSH2_N        48
+#define TYPE_ADDLSH_N         49
 #define TYPE_SUBLSH1_N        31
+#define TYPE_SUBLSH_N        130
 #define TYPE_RSBLSH1_N        34
 #define TYPE_RSBLSH2_N        46
 #define TYPE_RSBLSH_N         47
@@ -644,7 +647,7 @@ validate_sqrtrem (void)
 #define TYPE_SQR              82
 #define TYPE_UMUL_PPMM        83
 #define TYPE_UMUL_PPMM_R      84
-#define TYPE_MULLOW_N         85
+#define TYPE_MULLO_N          85
 
 #define TYPE_SBPI1_DIV_QR     90
 #define TYPE_TDIV_QR          91
@@ -894,9 +897,22 @@ param_init (void)
   COPY (TYPE_ADD_N);
   REFERENCE (refmpn_addlsh1_n);
 
+  p = &param[TYPE_ADDLSH2_N];
+  COPY (TYPE_ADD_N);
+  REFERENCE (refmpn_addlsh2_n);
+
+  p = &param[TYPE_ADDLSH_N];
+  COPY (TYPE_ADD_N);
+  p->shift = 1;
+  REFERENCE (refmpn_addlsh_n);
+
   p = &param[TYPE_SUBLSH1_N];
   COPY (TYPE_ADD_N);
   REFERENCE (refmpn_sublsh1_n);
+
+  p = &param[TYPE_SUBLSH_N];
+  COPY (TYPE_ADDLSH_N);
+  REFERENCE (refmpn_sublsh_n);
 
   p = &param[TYPE_RSBLSH1_N];
   COPY (TYPE_ADD_N);
@@ -907,7 +923,7 @@ param_init (void)
   REFERENCE (refmpn_rsblsh2_n);
 
   p = &param[TYPE_RSBLSH_N];
-  COPY (TYPE_ADD_N);
+  COPY (TYPE_ADDLSH_N);
   REFERENCE (refmpn_rsblsh_n);
 
   p = &param[TYPE_RSH1ADD_N];
@@ -1085,10 +1101,10 @@ param_init (void)
   p->src[1] = 1;
   REFERENCE (refmpn_mul_n);
 
-  p = &param[TYPE_MULLOW_N];
+  p = &param[TYPE_MULLO_N];
   COPY (TYPE_MUL_N);
   p->dst_size[0] = 0;
-  REFERENCE (refmpn_mullow_n);
+  REFERENCE (refmpn_mullo_n);
 
   p = &param[TYPE_MUL_MN];
   COPY (TYPE_MUL_N);
@@ -1446,8 +1462,17 @@ const struct choice_t choice_array[] = {
 #if HAVE_NATIVE_mpn_addlsh1_n
   { TRY(mpn_addlsh1_n), TYPE_ADDLSH1_N },
 #endif
+#if HAVE_NATIVE_mpn_addlsh2_n
+  { TRY(mpn_addlsh2_n), TYPE_ADDLSH2_N },
+#endif
+#if HAVE_NATIVE_mpn_addlsh_n
+  { TRY(mpn_addlsh_n), TYPE_ADDLSH_N },
+#endif
 #if HAVE_NATIVE_mpn_sublsh1_n
   { TRY(mpn_sublsh1_n), TYPE_SUBLSH1_N },
+#endif
+#if HAVE_NATIVE_mpn_sublsh_n
+  { TRY(mpn_sublsh_n), TYPE_SUBLSH_N },
 #endif
 #if HAVE_NATIVE_mpn_rsblsh1_n
   { TRY(mpn_rsblsh1_n), TYPE_RSBLSH1_N },
@@ -1530,7 +1555,7 @@ const struct choice_t choice_array[] = {
 
 
   { TRY(mpn_mul_basecase), TYPE_MUL_MN },
-  { TRY(mpn_mullow_basecase), TYPE_MULLOW_N },
+  { TRY(mpn_mullo_basecase), TYPE_MULLO_N },
 #if SQR_TOOM2_THRESHOLD > 0
   { TRY(mpn_sqr_basecase), TYPE_SQR },
 #endif
@@ -2020,6 +2045,7 @@ call (struct each_t *e, tryfun_t function)
   case TYPE_ADD_N:
   case TYPE_SUB_N:
   case TYPE_ADDLSH1_N:
+  case TYPE_ADDLSH2_N:
   case TYPE_SUBLSH1_N:
   case TYPE_RSBLSH1_N:
   case TYPE_RSBLSH2_N:
@@ -2028,6 +2054,8 @@ call (struct each_t *e, tryfun_t function)
     e->retval = CALLING_CONVENTIONS (function)
       (e->d[0].p, e->s[0].p, e->s[1].p, size);
     break;
+  case TYPE_ADDLSH_N:
+  case TYPE_SUBLSH_N:
   case TYPE_RSBLSH_N:
     e->retval = CALLING_CONVENTIONS (function)
       (e->d[0].p, e->s[0].p, e->s[1].p, size, shift);
@@ -2267,7 +2295,7 @@ call (struct each_t *e, tryfun_t function)
       (e->d[0].p, e->s[0].p, size, e->s[1].p, size2);
     break;
   case TYPE_MUL_N:
-  case TYPE_MULLOW_N:
+  case TYPE_MULLO_N:
     CALLING_CONVENTIONS (function) (e->d[0].p, e->s[0].p, e->s[1].p, size);
     break;
   case TYPE_SQR:
@@ -2607,6 +2635,13 @@ try_one (void)
 	      s[i].p[size-1] |= GMP_NUMB_HIGHBIT;
 	  }
 	break;
+
+      case DATA_SRC0_HIGHBIT:
+       if (i == 0)
+         {
+           s[i].p[size-1] |= GMP_NUMB_HIGHBIT;
+         }
+       break;
 
       case DATA_UDIV_QRNND:
 	s[i].p[1] %= divisor;

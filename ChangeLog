@@ -1,4 +1,115 @@
+2009-12-08  Niels Möller  <nisse@lysator.liu.se>
+
+	* tests/mpn/Makefile.am (check_PROGRAMS): Added t-bdiv.
+
+	* tests/mpn/t-bdiv.c: New file.
+
+	* mpn/generic/bdiv_q.c (mpn_bdiv_q): Fixed bad quotient length,
+	should have qn == nn.
+
+	* mpn/generic/bdiv_qr.c (mpn_bdiv_qr): Pass correct nn length to
+	the lower-level functions.
+
+2009-12-08  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/speed.c (routine): Add mpn_invert.
+
+	* tune/tuneup.c	(tune_invert): New function.
+	* tune/speed.h (SPEED_ROUTINE_MPN_INVERT): New macro.
+	* tune/common.c (speed_mpn_invert): New function.
+	* gmp-impl.h: Provide declarations for corresponding threshold var.
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add invert.c.
+
+2009-12-08  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tests/devel/try.c: Test mpn_addlsh2_n and mpn_{add,sub}lsh_n;
+	mpn_rsblsh_n now tests all shift values.
+	* tests/refmpn.c (refmpn_addlsh_n, refmpn_sublsh_n): New functions.
+	(refmpn_addlsh1_n): Use generic refmpn_addlsh_n.
+	(refmpn_sublsh1_n): Use generic refmpn_sublsh_n.
+	(refmpn_addlsh2_n): New function.
+	* tests/tests.h: Declare new functions.
+
+2009-12-06  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_mulmod_bnm1): Up min_size to 12.
+
+	* Globally: Rename *mullow* to *mullo*, *MULLOW* to *MULLO*.
+
+	* configure.in: Don't include ev5 directory for ev6* and ev7.  Misc
+	alpha path cleanups.
+	* mpn/alpha/add_n.asm: Replaced by mpn/alpha/ev5/add_n.asm.
+	* mpn/alpha/sub_n.asm: Replaced by mpn/alpha/ev5/sub_n.asm.
+	* mpn/alpha/lshift.asm: Replaced by mpn/alpha/ev5/lshift.asm.
+	* mpn/alpha/rshift.asm: Replaced by mpn/alpha/ev5/rshift.asm.
+	* mpn/alpha/com_n.asm: New, moved from mpn/alpha/ev5/rshift.asm.
+	* mpn/alpha/ev5/diveby3.asm: New, moved from mpn/alpha/diveby3.asm.
+
+	* mpn/powerpc64/mode64/diveby3.asm: Remove, it is slower than
+	mpn_bdiv_dbm1c on all hardware.
+
+	* mpn/generic/powm_sec.c: Rework logic for mpn_sqr_basecase size limit.
+
+	* gmp-impl.h (mpn_redc_1_sec): Declare.
+	* configure.in (gmp_mpn_functions): Add redc_1_sec.
+
+2009-12-06  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tests/devel/try.c(try_one): DATA_SRC0_HIGHBIT sets the high bit.
+
+2009-12-05  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/toom_eval_dgr3_pm1.c: Change return value: 0 or ~0.
+	* mpn/generic/toom_eval_dgr3_pm2.c: Likewise.
+	* mpn/generic/toom_eval_pm1.c: Likewise.
+	* mpn/generic/toom_eval_pm2exp.c: Likewise.
+	* mpn/generic/toom_eval_pm2.c: Rewrite to use mpn_addlsh2_n.
+
+	* mpn/generic/toom_interpolate_5pts.c: Param sa is a flag, not a sign.
+
+	* mpn/generic/toom33_mul.c: Adapt to changes above.
+	* mpn/generic/toom3_sqr.c: Likewise.
+	* mpn/generic/toom42_mul.c: Likewise.
+	* mpn/generic/toom43_mul.c: Reduce branches.
+	* mpn/generic/toom44_mul.c: Likewise.
+	* mpn/generic/toom53_mul.c: Likewise.
+	* mpn/generic/toom62_mul.c: Likewise.
+
+	* mpn/generic/toom52_mul.c: Use toom_eval_ functions.
+
+	* mpn/generic/toom4_sqr.c: Avoid C99 construct.
+	* mpn/generic/toom_interpolate_7pts.c: Likewise.
+
+2009-12-05  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/redc_1_sec.c: New file.
+	* mpn/generic/powm_sec.c: Use redc_1_sec.  Use dummy full subtract
+	instead of mpn_cmp since the latter leaks to the side channel.
+	(mpn_local_sqr_n): New function, with associated macros.
+	(mpn_powm_sec): Use mpn_local_sqr_n.
+
+	* configure.in (HAVE_NATIVE): Add missing functions, then sort.
+
+2009-12-04  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_dc_div): Up min_size to 6.
+	(tune_mod_1): Set MOD_1_1_THRESHOLD min_size to 2.
+
+	* tune/speed.h: Negate "binvert"-type inverses, as required.
+
+	* mpn/generic/redc_1.c: Add ASSERTs.
+	* mpn/generic/redc_2.c: Likewise.
+
+	* mpn/generic/sbpi1_bdiv_q.c: Simplify loops, indexing.
+
+2009-12-03  Yann Droneaud  <yann@droneaud.fr>
+
+	* acinclude.m4 ([long long reliability test 1]): Add a "static" for C99
+	inline semantics compatibility.
+
 2009-12-03  Torbjorn Granlund  <tege@gmplib.org>
+
+	* configure.in: Move intptr_t test into common AC_CHECK_TYPES.
 
 	* mpn/generic/gcdext.c: Add a TMP_FREE.
 
@@ -31,9 +142,9 @@
 2009-12-02  Marco Bodrato <bodrato@mail.dm.unipi.it>
 
 	* tests/devel/try.c: Test mpn_rsblsh2_n and mpn_rsblsh_n.
-        * tests/refmpn.c (refmpn_rsblsh_n, refmpn_rsblsh2_n): New functions.
+	* tests/refmpn.c (refmpn_rsblsh_n, refmpn_rsblsh2_n): New functions.
 	(refmpn_rsblsh1_n): Use generic refmpn_rsblsh_n.
-        * tests/tests.h: Declare new functions.
+	* tests/tests.h: Declare new functions.
 
 2009-12-03  Niels Möller  <nisse@lysator.liu.se>
 
@@ -63,7 +174,7 @@
 	(tune_binvert): New function.
 	* tune/speed.h (SPEED_ROUTINE_MPN_BINVERT): New macro.
 	* tune/common.c (speed_mpn_binvert): New function.
-	* gmp-impl.h: Provide declarations for corresponding threshold vars.
+	* gmp-impl.h: Provide declarations for corresponding threshold var.
 	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add binvert.c.
 
 	* tune/tuneup.c: Tune DC_BDIV_QR_THRESHOLD and DC_BDIV_Q_THRESHOLD.
@@ -131,8 +242,8 @@
 
 2009-11-28  Marco Bodrato <bodrato@mail.dm.unipi.it>
 
-	* mpn/generic/mulmod_bnm1.c: Basecases made simpler,
-	  this also corrects a bug affecting previous version.
+	* mpn/generic/mulmod_bnm1.c: Basecases made simpler, this also corrects
+	a bug affecting previous version.
 
 2009-11-28  Torbjorn Granlund  <tege@gmplib.org>
 
@@ -219,7 +330,7 @@
 2009-11-21  Marco Bodrato <bodrato@mail.dm.unipi.it>
 
 	* mpn/generic/mullow_n.c: Disable Mulders' trick for small operands,
-        use fft for bigger ones.
+	use fft for bigger ones.
 	* tests/mpn/t-mullo.c: New test file.
 
 2009-11-22  Torbjorn Granlund  <tege@gmplib.org>
@@ -359,7 +470,7 @@
 	* mpn/x86_64/x86_64-defs.m4 (CPUVEC_FUNCS_LIST): New, copied from
 	mpn/x86/x86-defs.m4.
 	* configure.in: Move down x86 fat setup code until after ABI has been
-	determined; generalize to handle x86_64.
+	determined; generalise to handle x86_64.
 
 2009-11-09  Torbjorn Granlund  <tege@gmplib.org>
 

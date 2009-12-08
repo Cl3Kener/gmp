@@ -33,7 +33,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
 
  * Improve handling of buffers.  It is pretty ugly now.
 
- * For even moduli, we compute an binvert of its odd part both here and in
+ * For even moduli, we compute a binvert of its odd part both here and in
    mpn_powm.  How can we avoid this recomputation?
 */
 
@@ -229,7 +229,7 @@ pow (mpz_srcptr b, mpz_srcptr e, mpz_srcptr m, mpz_ptr r)
       mpn_sub (r2, r2, ncnt, rp, nodd > ncnt ? ncnt : nodd);
 
       xp = tp + 2 * n;
-      mpn_mullow_n (xp, odd_inv_2exp, r2, ncnt);
+      mpn_mullo_n (xp, odd_inv_2exp, r2, ncnt);
 
       if (cnt != 0)
 	xp[ncnt - 1] &= (CNST_LIMB(1) << cnt) - 1;

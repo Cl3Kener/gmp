@@ -96,14 +96,10 @@ mpn_toom53_mul (mp_ptr pp,
   gp = pp;
 
   /* Compute as1 and asm1.  */
-  if (mpn_toom_eval_pm1 (as1, asm1, 4, ap, n, s, gp))
-    flags = toom7_w3_neg;
-  else
-    flags = 0;
+  flags = toom7_w3_neg & mpn_toom_eval_pm1 (as1, asm1, 4, ap, n, s, gp);
 
   /* Compute as2 and asm2. */
-  if (mpn_toom_eval_pm2 (as2, asm2, 4, ap, n, s, gp))
-    flags |= toom7_w1_neg;
+  flags |= toom7_w1_neg & mpn_toom_eval_pm2 (as2, asm2, 4, ap, n, s, gp);
 
   /* Compute ash = 16 a0 + 8 a1 + 4 a2 + 2 a3 + a4
      = 2*(2*(2*(2*a0 + a1) + a2) + a3) + a4  */
@@ -112,8 +108,9 @@ mpn_toom53_mul (mp_ptr pp,
   cy = 2*cy + mpn_addlsh1_n (ash, a2, ash, n);
   cy = 2*cy + mpn_addlsh1_n (ash, a3, ash, n);
   if (s < n)
-  {
-      mp_limb_t cy2 = mpn_addlsh1_n (ash, a4, ash, s);
+    {
+      mp_limb_t cy2;
+      cy2 = mpn_addlsh1_n (ash, a4, ash, s);
       ash[n] = 2*cy + mpn_lshift (ash + s, ash + s, n - s, 1);
       MPN_INCR_U (ash + s, n+1-s, cy2);
     }
@@ -204,8 +201,9 @@ mpn_toom53_mul (mp_ptr pp,
 #if HAVE_NATIVE_mpn_addlsh1_n
   cy = mpn_addlsh1_n (bsh, b1, b0, n);
   if (t < n)
-  {
-      mp_limb_t cy2 = mpn_addlsh1_n (bsh, b2, bsh, t);
+    {
+      mp_limb_t cy2;
+      cy2 = mpn_addlsh1_n (bsh, b2, bsh, t);
       bsh[n] = 2*cy + mpn_lshift (bsh + t, bsh + t, n - t, 1);
       MPN_INCR_U (bsh + t, n+1-t, cy2);
     }

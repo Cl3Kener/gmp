@@ -112,7 +112,7 @@ dnl  Expand to the right way to #include gmp-h.in.  This must be used
 dnl  instead of gmp.h, since that file isn't generated until the end of the
 dnl  configure.
 dnl
-dnl  Dummy values for GMP_LIMB_BITS and GMP_LIMB_BITS are enough
+dnl  Dummy value for GMP_LIMB_BITS is enough
 dnl  for all current configure-time uses of gmp.h.
 
 define(GMP_INCLUDE_GMP_H,
@@ -591,7 +591,7 @@ GMP_PROG_CC_WORKS_PART([$1], [long long reliability test 1],
 
 #if defined (__GNUC__) && ! defined (__cplusplus)
 typedef unsigned long long t1;typedef t1*t2;
-__inline__ t1 e(t2 rp,t2 up,int n,t1 v0)
+static __inline__ t1 e(t2 rp,t2 up,int n,t1 v0)
 {t1 c,x,r;int i;if(v0){c=1;for(i=1;i<n;i++){x=up[i];r=x+1;rp[i]=r;}}return c;}
 f(){static const struct{t1 n;t1 src[9];t1 want[9];}d[]={{1,{0},{1}},};t1 got[9];int i;
 for(i=0;i<1;i++){if(e(got,got,9,d[i].n)==0)h();g(i,d[i].src,d[i].n,got,d[i].want,9);if(d[i].n)h();}}

@@ -95,7 +95,7 @@ mpn_toom42_mul (mp_ptr pp,
   a1_a3 = pp + n + 1;
 
   /* Compute as1 and asm1.  */
-  vm1_neg = mpn_toom_eval_dgr3_pm1 (as1, asm1, ap, n, s, a0_a2);
+  vm1_neg = mpn_toom_eval_dgr3_pm1 (as1, asm1, ap, n, s, a0_a2) & 1;
 
   /* Compute as2.  */
 #if HAVE_NATIVE_mpn_addlsh1_n
@@ -218,7 +218,7 @@ mpn_toom42_mul (mp_ptr pp,
 
   TOOM42_MUL_N_REC (v0, ap, bp, n, scratch_out);	/* v0, 2n limbs */
 
-  mpn_toom_interpolate_5pts (pp, v2, vm1, n, s + t, 1^vm1_neg, vinf0);
+  mpn_toom_interpolate_5pts (pp, v2, vm1, n, s + t, vm1_neg, vinf0);
 
   TMP_FREE;
 }
