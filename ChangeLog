@@ -1,3 +1,8 @@
+2009-12-14  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/invert.c: Improved comments.
+	(mpn_bc_invertapp): Conditionally re-enable mpn_dcpi1_divappr_q.
+
 2009-12-14  Niels Möller  <nisse@lysator.liu.se>
 
 	* gmp-impl.h (udiv_qr_3by2): Fix typo in argument list.
@@ -26,9 +31,43 @@
 	results (slow!). Iteration counts of all toom tests reduced
 	considerably.
 
+2009-12-13  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/invert.c (mpn_invertapp): Split in _bc and _ni.
+	(mpn_bc_invertapp): New function, the basecase.
+	(mpn_ni_invertapp): New function, Newton iteration.
+	(mpn_invert): Use mpn_ni_invertapp.
+	* tune/tuneup.c (tune_invert): Min for INV_APPR_THRESHOLD.
+	(tune_invertappr): Min for INV_NEWTON_THRESHOLD.
+
+	* tune/speed.h (SPEED_ROUTINE_MPN_NI_INVERTAPPR): New macro.
+	(speed_mpn_ni_invertappr): New function.
+	* tune/common.c (speed_mpn_ni_invertappr): New function.
+	* tune/speed.c (routine): Add speed_mpn_ni_invertappr.
+
+	* tune/tuneup.c (tune_invertappr): Use speed_mpn_ni_invertappr to
+	tune INV_MULMOD_BNM1_THRESHOLD.
+
 2009-12-12  Torbjorn Granlund  <tege@gmplib.org>
 
 	* mpn/generic/mu_bdiv_qr.c (mpn_mu_bdiv_qr_itch): Rewrite.
+
+2009-12-12  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tests/mpn/t-mulmod_bnm1.c (main): Disable B^n+1 stressing test
+	for odd sizes.
+
+	* mpn/generic/invert.c: Complete rewrite. Uses Newton iterations.
+	* gmp-impl.h (mpn_invertappr): Added prototype and name-mangling.
+	(mpn_invertappr_itch): Added prototype and name-mangling.
+	(INV_APPR_THRESHOLD): Support for a new tunable const.
+	* tune/speed.h (SPEED_ROUTINE_MPN_INVERTAPPR): New macro.
+	(speed_mpn_invertappr): New function.
+	* tune/common.c (speed_mpn_invertappr): New function.
+	* tune/speed.c (routine): Add speed_mpn_invertappr.
+	* tune/tuneup.c (tune_invertappr): New function: was tune_invert.
+	(tune_invert): Now tune only INV_APPR_THRESHOLD.
+	(all): Enable call to tune_invert and tune_invertappr.
 
 2009-12-11  Torbjorn Granlund  <tege@gmplib.org>
 
@@ -62,7 +101,7 @@
 	Interface change, since the new code doesn't take a scratch
 	argument.
 
-	* tests/mpn/t-mulmod_bnm1.c (main): Ensure thatn an >= bn. Lowered
+	* tests/mpn/t-mulmod_bnm1.c (main): Ensure that an >= bn. Lowered
 	MIN_N to 1. Various fixes to handle n == 1 properly.
 
 	* mpn/generic/mulmod_bnm1.c (mpn_mulmod_bnm1): Small interface
