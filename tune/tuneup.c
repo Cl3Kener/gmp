@@ -170,6 +170,7 @@ mp_size_t  dc_bdiv_qr_threshold         = MP_SIZE_T_MAX;
 mp_size_t  dc_bdiv_q_threshold          = MP_SIZE_T_MAX;
 mp_size_t  inv_mulmod_bnm1_threshold    = MP_SIZE_T_MAX;
 mp_size_t  inv_newton_threshold         = MP_SIZE_T_MAX;
+mp_size_t  inv_appr_threshold           = MP_SIZE_T_MAX;
 mp_size_t  binv_mulmod_bnm1_threshold   = MP_SIZE_T_MAX;
 mp_size_t  binv_newton_threshold        = MP_SIZE_T_MAX;
 mp_size_t  redc_1_to_redc_2_threshold   = MP_SIZE_T_MAX;
@@ -1038,19 +1039,33 @@ tune_dc_bdiv (void)
 }
 
 void
+tune_invertappr (void)
+{
+  static struct param_t  param;
+
+  param.function = speed_mpn_ni_invertappr;
+  param.name = "INV_MULMOD_BNM1_THRESHOLD";
+  param.min_size = 4;
+  param.max_size = 5000;
+  one (&inv_mulmod_bnm1_threshold, &param);
+
+  param.function = speed_mpn_invertappr;
+  param.name = "INV_NEWTON_THRESHOLD";
+  param.min_size = 3;
+  param.max_size = 5000;
+  one (&inv_newton_threshold, &param);
+}
+
+void
 tune_invert (void)
 {
   static struct param_t  param;
   param.function = speed_mpn_invert;
 
-  param.name = "INV_NEWTON_THRESHOLD";
-  param.max_size = 500;
-  one (&inv_newton_threshold, &param);
-
-  param.name = "INV_MULMOD_BNM1_THRESHOLD";
-  param.min_size = inv_newton_threshold;
-  param.max_size = 500;
-  one (&inv_mulmod_bnm1_threshold, &param);
+  param.name = "INV_APPR_THRESHOLD";
+  param.min_size = 3;
+  param.max_size = 5000;
+  one (&inv_appr_threshold, &param);
 }
 
 void
@@ -1919,9 +1934,8 @@ all (void)
 
   tune_dc_div ();
   tune_dc_bdiv ();
-#if 0				/* enable with new invert.c */
+  tune_invertappr ();
   tune_invert ();
-#endif
   tune_binvert ();
   tune_redc ();
   printf("\n");
