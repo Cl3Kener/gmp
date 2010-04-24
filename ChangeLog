@@ -7,7 +7,26 @@
 	(mpn_gcd): Inlined the code from mpn_gcd_lehmer_n. Also use
 	MPN_GCD_SUBDIV_STEP_ITCH rather than MPN_GCD_LEHMER_N_ITCH.
 
+2010-04-22  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/powerpc64/mode64/bdiv_dbm1c.asm: Swap multiply insns to make them
+	consecutive, for the benefit of POWER6.
+
+	* mpn/powerpc64/mode64/p6/gmp-mparam.h: New file.
+
+2010-04-21  Torbjorn Granlund  <tege@gmplib.org>
+
 	* mpn/generic/gcd_lehmer.c: Deleted file.
+
+	* mpn/powerpc64/mode64/divrem_1.asm: Swap multiply insns to make them
+	consecutive, for the benefit of POWER6.
+	* mpn/powerpc64/mode64/dive_1.asm: Likewise.
+	* mpn/powerpc64/mode64/divrem_2.asm: Likewise.
+	* mpn/powerpc64/mode64/mul_1.asm: Likewise.
+	* mpn/powerpc64/mode64/aorsmul_1.asm: Likewise.
+
+	* mpn/powerpc64/mode64/aorslshC_n.asm: Swap ldx operands as a temporary
+	workaround for POWER6 pipeline glitch.
 
 2010-04-19  Niels Möller  <nisse@lysator.liu.se>
 
@@ -46,7 +65,41 @@
 	renamed...
 	* mpn/generic/hgcd2.c (mpn_hgcd_mul_matrix1_inverse_vector):
 	...from here.
-	
+
+2010-04-12  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/mpn/t-toom6h.c (SIZE_LOG): Define.
+	* tests/mpn/t-toom8h.c (SIZE_LOG): Likewise.
+
+2010-04-10  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/ia64/lorrshift.asm: Rewrite feed-in and wind-down code.
+
+	* mpn/ia64/aorslsh1_n.asm: Adapt to new aorslsh1_n.
+	* mpn/ia64/aorslsh1_n.asm: Likewise.
+
+	* mpn/ia64/aors_n.asm: Complete rewrite.
+	* mpn/ia64/aorslsh1_n.asm: Likewise.
+
+	* mpn/ia64/add_n_sub_n.asm: Misc cleanups.  Add slotting comments.
+
+	* mpn/ia64/lshiftc.asm: New file.
+
+	* mpn/x86_64/pentium4/gmp-mparam.h: No longer disable rsh1add_n and
+	rsh1sub_n; instead disable rsblsh1_n, addlsh2_n, rsblsh2_n.
+
+	* mpn/x86/divrem_2.asm: Use "orb" instead of "or" to work around
+	Solaris assembler bug.
+	* mpn/x86_64/mpn/x86_64/divrem_2.asm: Likewise.
+
+	* mpn/x86/aors_n.asm: Use operand-less shift-by-1 insn form.
+	* mpn/x86/pentium/aors_n.asm: Likewise.
+	* mpn/x86_64/invert_limb.asm: Likewise.
+
+	* mpn/x86_64/pentium4/aors_n.asm: Let non-nc code fall into nc code.
+
+	* mpn/x86_64/pentium4/rsh1aors_n.asm: New file.
+
 2010-03-25  Torbjorn Granlund  <tege@gmplib.org>
 
 	* mpn/ia64/add_n_sub_n.asm: New file.

@@ -1,5 +1,7 @@
 dnl  IA-64 mpn_addlsh1_n/mpn_sublsh1_n -- rp[] = up[] +- (vp[] << 1).
 
+dnl  Contributed to the GNU project by Torbjorn Granlund.
+
 dnl  Copyright 2003, 2004, 2005, 2010 Free Software Foundation, Inc.
 
 dnl  This file is part of the GNU MP Library.
@@ -29,14 +31,15 @@ define(RSH,		62)
 
 ifdef(`OPERATION_addlsh2_n',`
   define(ADDSUB,       add)
-  define(PRED,	       ltu)
+  define(ADDP,         1)
+  define(CND,	       ltu)
   define(INCR,	       1)
   define(LIM,	       -1)
   define(func, mpn_addlsh2_n)
 ')
 ifdef(`OPERATION_sublsh2_n',`
   define(ADDSUB,       sub)
-  define(PRED,	       gtu)
+  define(CND,	       gtu)
   define(INCR,	       -1)
   define(LIM,	       0)
   define(func, mpn_sublsh2_n)
