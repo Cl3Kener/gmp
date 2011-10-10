@@ -1,3 +1,17 @@
+2011-10-10  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/hgcd_appr.c: Deleted debugging code.
+
+	* tests/mpn/t-hgcd_appr.c (main): Added -v flag.
+	(hgcd_appr_valid_p): Increased margin of non-minimality for
+	divide-and-conquer algorithm. Display bit counts only if
+	-v is used.
+
+	* mpn/generic/hgcd_appr.c (submul): New (static) function.
+	(hgcd_matrix_apply): New function.
+	(mpn_hgcd_appr_itch): Account for divide-and-conquer algorithm.
+	(mpn_hgcd_appr): Implemented divide-and-conquer.
+
 2011-10-10  Torbjorn Granlund  <tege@gmplib.org>
 
 	* tune/time.c (STCK): Use proper memory constraint.
@@ -6,6 +20,8 @@
 	* tests/mpz/t-scan.c (check_ref): Fix loop end bound.
 
 2011-10-10  Niels Möller  <nisse@lysator.liu.se>
+
+	* gmp-impl.h: (HGCD_APPR_THRESHOLD): New threshold.
 
 	* mpn/generic/hgcd_appr.c (mpn_hgcd_appr): Interface change.
 	Destroy inputs, let caller make working copies if needed.
