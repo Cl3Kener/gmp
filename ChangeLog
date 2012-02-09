@@ -1,7 +1,22 @@
+2012-02-09 Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpz/oddfac_1.c (mpz_oddfac_1): Get ready for n!!
+	* gmp-impl.h (mpz_oddfac_1): Update signature.
+	* mpz/fac_ui.c (mpz_fac_ui): Update call to mpz_oddfac_1.
+
 2012-02-08  Torbjorn Granlund  <tege@gmplib.org>
 
 	* mpn/powerpc32/divrem_2.asm: Fix off-by-one condition in invert_limb
 	code.
+
+2012-02-08  Niels Möller  <nisse@lysator.liu.se>
+
+	* doc/gmp.texi (mpz_gcdext): Clarified corner cases in cofactor
+	canonicalization.
+
+2012-02-04 Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tests/refmpn.c (refmpn_mul): More conservative allocations.
 
 2012-02-03  Torbjorn Granlund  <tege@gmplib.org>
 
