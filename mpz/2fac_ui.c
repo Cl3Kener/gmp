@@ -1,9 +1,8 @@
-/* mpz_fac_ui(RESULT, N) -- Set RESULT to N!.
+/* mpz_2fac_ui(RESULT, N) -- Set RESULT to N!!.
 
 Contributed to the GNU project by Marco Bodrato.
 
-Copyright 1991, 1993, 1994, 1995, 2000, 2001, 2002, 2003, 2011, 2012
-Free Software Foundation, Inc.
+Copyright 2012 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
@@ -42,62 +41,58 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
       (PR) *= (P);						\
   } while (0)
 
-#if TUNE_PROGRAM_BUILD
-#define FACTORS_PER_LIMB (GMP_NUMB_BITS / (LOG2C(FAC_DSC_THRESHOLD_LIMIT-1)+1))
-#else
-#define FACTORS_PER_LIMB (GMP_NUMB_BITS / (LOG2C(FAC_ODD_THRESHOLD)+1))
-#endif
+#define FAC_2DSC_THRESHOLD ((FAC_DSC_THRESHOLD << 1) | (FAC_DSC_THRESHOLD & 1))
+#define FACTORS_PER_LIMB   (GMP_NUMB_BITS / (LOG2C(FAC_2DSC_THRESHOLD-1)+1))
 
-/* Computes n!, the factorial of n.
+/* Computes n!!, the 2-multi-factorial of n. (aka double-factorial or semi-factorial)
    WARNING: it assumes that n fits in a limb!
  */
 void
-mpz_fac_ui (mpz_ptr x, unsigned long n)
+mpz_2fac_ui (mpz_ptr x, unsigned long n)
 {
-  static const mp_limb_t table[] = { ONE_LIMB_FACTORIAL_TABLE };
-
   ASSERT (n <= GMP_NUMB_MAX);
 
-  if (n < numberof (table))
-    {
-      PTR (x)[0] = table[n];
-      SIZ (x) = 1;
-    }
-  else if (BELOW_THRESHOLD (n, FAC_ODD_THRESHOLD))
-    {
-      mp_limb_t prod, max_prod;
-      mp_size_t j;
-      mp_ptr    factors;
+  if ((n & 1) == 0) { /* n is even, n = 2k, (2k)!! = k! 2^k */
+    mp_limb_t count;
+
+    popc_limb (count, n);
+    count = n - count;
+    n >>= 1;
+    mpz_oddfac_1 (x, n, 0);
+    mpz_mul_2exp (x, x, count);
+  } else { /* n is odd */
+    static const mp_limb_t tabled[] = { ONE_LIMB_ODD_DOUBLEFACTORIAL_TABLE };
+
+    if (n < 2 * numberof (tabled)) {
+	PTR (x)[0] = tabled[n >> 1];
+	SIZ (x) = 1;
+    } else if (BELOW_THRESHOLD (n, FAC_2DSC_THRESHOLD)) { /* odd basecase, */
+      mp_limb_t *factors, prod, max_prod, j;
       TMP_SDECL;
 
+      /* FIXME: we might alloc a fixed ammount 1+FAC_2DSC_THRESHOLD/FACTORS_PER_LIMB */
       TMP_SMARK;
-      factors = TMP_SALLOC_LIMBS (2 + (n - numberof (table)) / FACTORS_PER_LIMB);
+      factors = TMP_SALLOC_LIMBS (1 + n / (2 * FACTORS_PER_LIMB));
 
-      factors[0] = table[numberof (table)-1];
+      factors[0] = tabled[numberof (tabled) - 1];
       j = 1;
       prod = n;
-#if TUNE_PROGRAM_BUILD
-      max_prod = GMP_NUMB_MAX / FAC_DSC_THRESHOLD_LIMIT;
-#else
-      max_prod = GMP_NUMB_MAX / (FAC_ODD_THRESHOLD | 1);
-#endif
-      while (--n >= numberof (table))
+
+      max_prod = GMP_NUMB_MAX / FAC_2DSC_THRESHOLD;
+      while ((n -= 2) >= numberof (tabled) * 2 + 1)
 	FACTOR_LIST_STORE (n, prod, max_prod, factors, j);
 
       factors[j++] = prod;
       mpz_prodlimbs (x, factors, j);
 
       TMP_SFREE;
+    } else { /* for the asymptotically fast odd case, let oddfac do the job. */
+      mpz_oddfac_1 (x, n, 1);
     }
-  else
-    {
-      mp_limb_t count;
-      mpz_oddfac_1 (x, n, 0);
-      popc_limb (count, n);
-      mpz_mul_2exp (x, x, n - count);
-    }
+  }
 }
 
 #undef LOG2C
 #undef FACTORS_PER_LIMB
 #undef FACTOR_LIST_STORE
+#undef FAC_2DSC_THRESHOLD
