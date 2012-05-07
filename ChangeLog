@@ -3,6 +3,9 @@
 	* mpn/minithres/gmp-mparam.h: Updated TOOM6 and FAC_DSC.
 	* tests/mpn/toom-sqr-shared.h: Don't test if no range.
 
+	* mpz/oddfac_1.c: Add ASSERTs to warn about small threshold.
+	* tune/tuneup.c: Update minimal threshold for FAC_DSC.
+
 2012-05-06  Torbjorn Granlund  <tege@gmplib.org>
 
 	* mpn/arm/v6/sqr_basecase.asm: Simplify n=4 code.
