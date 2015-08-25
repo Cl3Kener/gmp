@@ -38,6 +38,13 @@ see https://www.gnu.org/licenses/.  */
 #include "gmp-impl.h"
 #include "longlong.h"
 
+#ifndef SQRLO_SHORTCUT_MULTIPLICATIONS
+#if HAVE_NATIVE_mpn_addmul_1
+#define SQRLO_SHORTCUT_MULTIPLICATIONS 0
+#else
+#define SQRLO_SHORTCUT_MULTIPLICATIONS 1
+#endif
+#endif
 
 #if HAVE_NATIVE_mpn_sqr_diagonal
 #define MPN_SQR_DIAGONAL(rp, up, n)					\
@@ -56,8 +63,7 @@ see https://www.gnu.org/licenses/.  */
   } while (0)
 #endif
 
-#if HAVE_NATIVE_mpn_addlsh1_n_ip1
-#define MPN_SQRLO_DIAG_ADDLSH1(rp, tp, up, n)				\
+#define MPN_SQRLO_DIAGONAL(rp, up, n)					\
   do {									\
     mp_size_t nhalf;							\
     nhalf = (n) >> 1;							\
@@ -68,25 +74,26 @@ see https://www.gnu.org/licenses/.  */
 	op = (up)[nhalf];						\
 	(rp)[(n) - 1] = (op * op) & GMP_NUMB_MASK;			\
       }									\
+  } while (0)
+
+#if HAVE_NATIVE_mpn_addlsh1_n_ip1
+#define MPN_SQRLO_DIAG_ADDLSH1(rp, tp, up, n)				\
+  do {									\
+    MPN_SQRLO_DIAGONAL((rp), (up), (n));				\
     mpn_addlsh1_n_ip1 ((rp) + 1, (tp), (n) - 1);			\
   } while (0)
 #else
 #define MPN_SQRLO_DIAG_ADDLSH1(rp, tp, up, n)				\
   do {									\
-    mp_size_t nhalf;							\
-    nhalf = (n) >> 1;							\
-    MPN_SQR_DIAGONAL ((rp), (up), nhalf);				\
-    if (((n) & 1) != 0)							\
-      {									\
-	mp_limb_t op;							\
-	op = (up)[nhalf];						\
-	(rp)[(n) - 1] = (op * op) & GMP_NUMB_MASK;			\
-      }									\
+    MPN_SQRLO_DIAGONAL((rp), (up), (n));				\
     mpn_lshift ((tp), (tp), (n) - 1, 1);				\
     mpn_add_n ((rp) + 1, (rp) + 1, (tp), (n) - 1);			\
   } while (0)
 #endif
 
+/* Avoid zero allocations when SQRLO_LO_THRESHOLD is 0 (this code not used). */
+#define SQRLO_BASECASE_ALLOC						\
+  (SQRLO_DC_THRESHOLD_LIMIT < 2 ? 1 : SQRLO_DC_THRESHOLD_LIMIT - 1)
 
 /* Default mpn_sqrlo_basecase using mpn_addmul_1.  */
 #ifndef SQRLO_SPECIAL_CASES
@@ -143,14 +150,14 @@ mpn_sqrlo_basecase (mp_ptr rp, mp_srcptr up, mp_size_t n)
     }
   else
     {
-      mp_limb_t tp[2 * SQR_TOOM2_THRESHOLD - 1];
+      mp_limb_t tp[SQRLO_BASECASE_ALLOC];
       mp_size_t i;
 
       /* must fit n-1 limbs in tp */
-      ASSERT (n <= 2 * SQR_TOOM2_THRESHOLD);
+      ASSERT (n <= SQRLO_DC_THRESHOLD_LIMIT);
 
       --n;
-#ifdef SQRLO_SHORTCUT_MULTIPLICATIONS
+#if SQRLO_SHORTCUT_MULTIPLICATIONS
       {
 	mp_limb_t cy;
 
