@@ -3,7 +3,7 @@ dnl  Process this file with autoconf to produce a configure script.
 
 define(GMP_COPYRIGHT,[[
 
-Copyright 1996-2015 Free Software Foundation, Inc.
+Copyright 1996-2016 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
@@ -141,11 +141,6 @@ yes|no) ;;
 *) AC_MSG_ERROR([bad value $enableval for --enable-assembly, need yes or no]) ;;
 esac],
 [enable_assembly=yes])
-
-if test "$enable_assembly" = "yes"; then
-  AC_DEFINE(WANT_ASSEMBLY,1,
-  [Defined to 1 as per --enable-assembly])
-fi
 
 
 AC_ARG_ENABLE(fft,
@@ -596,16 +591,7 @@ case $host in
     ;;
 
 
-  arm64*-*-* | aarch64*-*-*)
-    # The compiler clang version 3.4 or earlier requires an explicit -mfpu=neon
-    # for out assembly code.  Since this compiler cloaks as gcc, we have to
-    # fake too.
-    gcc_cflags_maybe="-mfpu=neon"
-    path="arm64"
-    ;;
-
-
-  arm*-*-*)
+  arm*-*-* | aarch64*-*-*)
     gcc_cflags="$gcc_cflags $fomit_frame_pointer"
     gcc_cflags_optlist="arch fpmode neon tune"
     gcc_testlist="gcc-arm-umodsi"
@@ -644,6 +630,13 @@ case $host in
       armcortexa5 | armv7*)
 	path="arm/v6t2 arm/v6 arm/v5 arm"
 	gcc_cflags_arch="-march=armv7-a"
+	gcc_cflags_tune="-mtune=cortex-a5"
+	;;
+      armcortexa5neon)
+	path="arm/neon arm/v6t2 arm/v6 arm/v5 arm"
+	gcc_cflags_neon="-mfpu=neon"
+	gcc_cflags_arch="-march=armv7-a"
+	gcc_cflags_tune="-mtune=cortex-a5"
 	;;
       armcortexa7)
 	path="arm/v7a/cora7 arm/v6t2 arm/v6 arm/v5 arm"
@@ -688,6 +681,48 @@ case $host in
 	gcc_cflags_arch="-march=armv7-a"
 	gcc_cflags_neon="-mfpu=neon"
 	gcc_cflags_tune="-mtune=cortex-a15 -mtune=cortex-a9"
+	;;
+      armcortexa53)
+	unset CALLING_CONVENTIONS_OBJS
+	path="arm64/cora53 arm64"
+	gcc_cflags_arch=""
+	gcc_cflags_tune="-mtune=cortex-a53"
+	;;
+      armcortexa57)
+	unset CALLING_CONVENTIONS_OBJS
+	path="arm64"
+	gcc_cflags_arch=""
+	gcc_cflags_tune="-mtune=cortex-a57"
+	;;
+      armcortexa72)
+	unset CALLING_CONVENTIONS_OBJS
+	path="arm64"
+	gcc_cflags_arch=""
+	gcc_cflags_tune="-mtune=cortex-a72"
+	;;
+      exynosm1)
+	unset CALLING_CONVENTIONS_OBJS
+	path="arm64"
+	gcc_cflags_arch=""
+	gcc_cflags_tune="-mtune=exynosm1"
+	;;
+      thunderx)
+	unset CALLING_CONVENTIONS_OBJS
+	path="arm64"
+	gcc_cflags_arch=""
+	gcc_cflags_tune="-mtune=thunderx"
+	;;
+      xgene1)
+	unset CALLING_CONVENTIONS_OBJS
+	path="arm64/xgene1 arm64"
+	gcc_cflags_arch=""
+	gcc_cflags_tune="-mtune=xgene1"
+	;;
+      aarch64*)
+	unset CALLING_CONVENTIONS_OBJS
+	path="arm64"
+	gcc_cflags_arch=""
+	gcc_cflags_tune=""
 	;;
       *)
 	path="arm"
@@ -2460,7 +2495,7 @@ esac
 
 if test "$enable_assembly" = "no"; then
   path="generic"
-  CFLAGS="$CFLAGS -DNO_ASM"
+  AC_DEFINE([NO_ASM],1,[Define to 1 to disable the use of inline assembly])
 #  for abi in $abilist; do
 #    eval unset "path_\$abi"
 #    eval gcc_${abi}_cflags=\"\$gcc_${abi}_cflags -DNO_ASM\"
